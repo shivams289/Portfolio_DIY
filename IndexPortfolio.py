@@ -76,43 +76,71 @@ with st.form("my_form"):
         else:
             st.write("Portfolio Weights Initialised.......")
 assets = []
+asset_weights = {}
 def get_epoch(date_string):
     return (date_string - dt.datetime(1970,1,1)).dt.total_seconds()
 
 if n50 !=0:
     assets.append("N50")
+    asset_weights["N50"] = n50/100
 if nn50 !=0:
     assets.append("NN50")
+    asset_weights["NN50"] = nn50/100
 
 if midcap !=0:
     assets.append("MIDCAP150")
+    asset_weights["MIDCAP150"] = midcap/100
 
 if smallcap !=0:
     assets.append("SMALLCAP250")
+    asset_weights["SMALLCAP250"] = smallcap/100
 
 if gold_alloc !=0:
     assets.append("GOLD")
+    asset_weights["GOLD"] = gold_alloc/100
 
 if debt_alloc !=0 :
     assets.append("DEBT")
+    asset_weights["DEBT"] = debt_alloc/100
 
 if snp500 !=0 :
     assets.append("SNP500")
+    asset_weights["SNP500"] = snp500/100
 
-asset_weights = {"N50":n50, "NN50":nn50, "MIDCAP150":midcap, "SMALLCAP250":smallcap, "GOLD":gold_alloc, "DEBT":debt_alloc, "SNP500":snp500}
 assets_nav = B.get_assets_nav(assets)
 start_dt = B.get_start_date(assets_nav)
 end_dt = B.get_end_date(assets_nav)
 print(start_dt, end_dt)
 
 st.subheader("Enter the TimeFrame of Backtest")
-start_date = st.date_input("What Should be the Start Date portfolio", value = start_dt, min_value= start_dt)
-end_date = st.date_input("What Should be the End Date", value = end_dt,min_value= start_date, max_value=end_dt)
+col10, col11 = st.columns(2)
+with col10:
+    start_date = st.date_input("Start Date", value = start_dt, min_value= start_dt)
+with col11:
+    end_date = st.date_input("End Date", value = end_dt,min_value= start_date, max_value=end_dt)
 
-print("User Entered Start and End Dates:",start_date, end_date)
+print("User Entered Start and End Dates:",start_date, end_date, "\n")
 
 assets_nav = assets_nav.loc[(assets_nav.dates.dt.date >= start_date) & (assets_nav.dates.dt.date <= end_date) ]
-print("Final Dates With Which Portfolio Will be created",assets_nav.dates.iloc[0], assets_nav.dates.iloc[-1])
+assets_nav.reset_index(inplace=True, drop=True)
+print("Final Dates With Which Portfolio Will be created",assets_nav.dates.iloc[0], assets_nav.dates.iloc[-1], "\n")
 
 P = PortFolio(assets_nav, asset_weights)
+portfolio = P.portfolio_creator()
+
+print("final BAH Portfolio", portfolio['Portfolio'])
+
+st.subheader(
+    """ ## Select To Show Performance
+                        """
+)
+
+chart_options = list(set(assets_nav.columns) - set(['dates']))
+portfolio[chart_options] = B.scale_data(portfolio[chart_options])
+chart_options.append('Portfolio')
+selected_options = st.multiselect(
+    'PortfolioVs',
+    chart_options, 'Portfolio')
+
+st.line_chart(portfolio, x='dates', y=selected_options)
 

@@ -11,6 +11,8 @@ class PortFolio:
     def __init__(self, data, asset_weights = {}):
         self.nav = data
         self.weights = asset_weights
+        print("Weights In Portfolio Class:", self.weights)
+        print("Columns in Nav data:",self.nav.columns)
         self.cur_units = {x:[] for x in self.weights.keys()}
         self.funds_portfolio_value = {x:[] for x in self.weights.keys()}
         self.fund_vals = [x+'_value' for x in self.weights.keys()]

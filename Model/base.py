@@ -63,6 +63,16 @@ class Base:
         print("After Preprocessing......\n",data)
         data = self.preprocess_missing(data)
         return data
+    
+    def scale_data(self, data):
+        cols = data.columns[~data.columns.str.contains('ate')].values
+        data[cols] = (
+            data[cols]
+            / data[cols].iloc[0]
+            * 1000
+        )
+
+        return data
 
 
 
