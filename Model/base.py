@@ -4,35 +4,42 @@ class Base:
     def __init__(self, indices_path = 'Data/n50_nn50_smallcap_midcap_indices.xlsx', smallcap_path='Data/all_smallcap_jan31.xlsx', midcap_path = 'Data/all_midcap_jan31.xlsx', start = '04/01/1997', end = '02/06/2023', gold_path = "", debt_path = ""):
         self.start_dt = start
         self.end_dt = end
-        self.indices = pd.read_excel(indices_path) #Contains NIFTY50, NIFTY NEXT50, NIFTY SMALLCAP 250, NIFTY MIDCAP 150
+        self.indices = pd.read_excel(indices_path) #Contains NIFTY50, NIFTY NEXT50, NIFTY SMALLCAP 250, NIFTY MIDCAP 150 & S&P500
         self.gold = pd.read_excel(gold_path)
         self.debt = pd.read_excel(debt_path)
 
         self.indices = self.data_preprocessing(self.indices)
-        self.gold = 
-
-        self.asset_weights = {'GOLD':0, 'DEBT':0, 'INTEQ':0, 'DOMEQ':1}
-        if self.asset_weights['DOMEQ'] != 0:
-            self.indices = pd.read_excel(domeq_indices_path)
-
-
+        self.gold = self.data_preprocessing(self.gold)
+        self.gold.columns = ['dates', 'GOLD']
+        self.debt = self.data_preprocessing(self.debt)
+        self.debt.columns = ['dates', 'DEBT']
         
         self.indices_name = {'GOLD':'GOLD', 'DEBT':'DEBT', 'INTEQ':'SNP500', 'DOMEQ':[]}
 
 
     def get_min_start_date(self, asset_name = ""):
         if asset_name == "GOLD":
-            start = self.gold.dates.tail(1).dt.date()
+            start = self.gold.dropna().dates.head(1).dt.date()
         if asset_name == "DEBT":
-            start = self.debt.dates.tail(1).dt.date()
+            start = self.debt.dropna().dates.head(1).dt.date()
+
         if asset_name == "SNP500":
-            start = self.debt.dates.tail(1).dt.date()
+            start = self.indices['dates', 'SNP500'].dropna().dates.head(1).dt.date()
 
         if asset_name == "NIFTY50":
-            self.debt.dates.tail(1).dt.date()
+            start = self.indices['dates', 'SNP500'].dropna().dates.head(1).dt.date()
+
+        if asset_name == "NIFTY_SMALLCAP_250":
+            start = self.indices['dates', 'NIFTY_SMALLCAP_250'].dropna().dates.head(1).dt.date()
+        if asset_name == "NIFTY_NEXT_50":
+            start = self.indices['dates', 'NIFTY_NEXT_50'].dropna().dates.head(1).dt.date()
+
+        if asset_name == "NIFTY_MIDCAP_150":
+            start = self.indices['dates', 'NIFTY_MIDCAP_150'].dropna().dates.head(1).dt.date()
             
 
-        return datetime.strftime(start)
+        return start.strftime("%m/%d/%Y")
+    
     def get_end_date(self):
         return self.end_dt
 
