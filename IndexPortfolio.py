@@ -7,6 +7,7 @@ import seaborn as sns
 import datetime as dt
 from dateutil.relativedelta import relativedelta
 from Model.base import Base
+from Model.portfolio import PortFolio
 B = Base()
 st.title('Create Your Own Index Portfolio')
 st.write('------------------------------------------------------------------------------------------------------')
@@ -74,34 +75,43 @@ with st.form("my_form"):
 
         else:
             st.write("Portfolio Weights Initialised.......")
-minimum_dates = []
+assets = []
 def get_epoch(date_string):
     return (date_string - dt.datetime(1970,1,1)).dt.total_seconds()
 
-
 if n50 !=0:
-    minimum_dates.append(B.get_min_start_date(asset_name = "N50"))
+    assets.append("N50")
 if nn50 !=0:
-    minimum_dates.append(B.get_min_start_date(asset_name = "NN50"))
+    assets.append("NN50")
 
 if midcap !=0:
-    minimum_dates.append(B.get_min_start_date(asset_name = "MIDCAP150"))
+    assets.append("MIDCAP150")
 
 if smallcap !=0:
-    minimum_dates.append(B.get_min_start_date(asset_name = "SMALLCAP250"))
+    assets.append("SMALLCAP250")
 
 if gold_alloc !=0:
-    minimum_dates.append(B.get_min_start_date(asset_name = "GOLD"))
+    assets.append("GOLD")
 
 if debt_alloc !=0 :
-    minimum_dates.append(B.get_min_start_date(asset_name = "DEBT"))
+    assets.append("DEBT")
 
 if snp500 !=0 :
-    minimum_dates.append(B.get_min_start_date(asset_name = "SNP500"))
+    assets.append("SNP500")
 
-start_date = min(minimum_dates)
-end_date = B.get_end_date()
+assets_nav = B.get_assets_nav(assets)
+start_dt = B.get_start_date(assets_nav)
+end_dt = B.get_end_date(assets_nav)
+print(start_dt, end_dt)
 
 st.subheader("Enter the TimeFrame of Backtest")
-start_date = st.date_input("What Should be the Start Date portfolio", min_value= '')
-end_date = st.date_input("What Should be the End Date")
+start_date = st.date_input("What Should be the Start Date portfolio", value = start_dt, min_value= start_dt)
+end_date = st.date_input("What Should be the End Date", value = end_dt,min_value= start_date, max_value=end_dt)
+
+print("User Entered Start and End Dates:",start_date, end_date)
+
+assets_nav = assets_nav.loc[(assets_nav.dates.dt.date >= start_date) & (assets_nav.dates.dt.date <= end_date) ]
+print("Final Dates With Which Portfolio Will be created",assets_nav.dates.iloc[0], assets_nav.dates.iloc[-1])
+
+P = PortFolio(assets_nav)
+

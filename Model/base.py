@@ -1,47 +1,29 @@
 import pandas as pd
 import datetime
 class Base:
-    def __init__(self, indices_path = 'Data/n50_nn50_smallcap_midcap_indices.xlsx', smallcap_path='Data/all_smallcap_jan31.xlsx', midcap_path = 'Data/all_midcap_jan31.xlsx', start = '04/01/1997', end = '02/06/2023', gold_path = "", debt_path = ""):
+    def __init__(self, indices_path = 'Data/n50_nn50_smallcap_midcap_indices.xlsx', smallcap_path='Data/all_smallcap_jan31.xlsx', midcap_path = 'Data/all_midcap_jan31.xlsx', start = '04/01/1997', end = '01/19/2023'):
         self.start_dt = start
         self.end_dt = end
         self.indices = pd.read_excel(indices_path) #Contains NIFTY50, NIFTY NEXT50, NIFTY SMALLCAP 250, NIFTY MIDCAP 150 & S&P500
-        self.gold = pd.read_excel(gold_path)
-        self.debt = pd.read_excel(debt_path)
+        print("Loading indices data.....\n",self.indices)
 
         self.indices = self.data_preprocessing(self.indices)
-        self.gold = self.data_preprocessing(self.gold)
-        self.gold.columns = ['dates', 'GOLD']
-        self.debt = self.data_preprocessing(self.debt)
-        self.debt.columns = ['dates', 'DEBT']
         
-        self.indices_name = {'GOLD':'GOLD', 'DEBT':'DEBT', 'INTEQ':'SNP500', 'DOMEQ':[]}
+        indices_names = {"NIFTY 50":"N50", "NIFTY NEXT 50":"NN50", "Nifty Midcap 150 - TRI":"MIDCAP150", "Nifty Smallcap 250 - TRI":"SMALLCAP250", "GOLD":"GOLD", "Aditya Birla SL Corp Bond Fund(G)":"DEBT", "SNP500":"SNP500"}
+        self.indices.rename(columns = indices_names, inplace =True)
 
 
-    def get_min_start_date(self, asset_name = ""):
-        if asset_name == "GOLD":
-            start = self.gold.dropna().dates.head(1).dt.date()
-        if asset_name == "DEBT":
-            start = self.debt.dropna().dates.head(1).dt.date()
-
-        if asset_name == "SNP500":
-            start = self.indices['dates', 'SNP500'].dropna().dates.head(1).dt.date()
-
-        if asset_name == "NIFTY50":
-            start = self.indices['dates', 'SNP500'].dropna().dates.head(1).dt.date()
-
-        if asset_name == "NIFTY_SMALLCAP_250":
-            start = self.indices['dates', 'NIFTY_SMALLCAP_250'].dropna().dates.head(1).dt.date()
-        if asset_name == "NIFTY_NEXT_50":
-            start = self.indices['dates', 'NIFTY_NEXT_50'].dropna().dates.head(1).dt.date()
-
-        if asset_name == "NIFTY_MIDCAP_150":
-            start = self.indices['dates', 'NIFTY_MIDCAP_150'].dropna().dates.head(1).dt.date()
-            
-
-        return start.strftime("%m/%d/%Y")
+    def get_assets_nav(self, asset_names = []):
+        asset_names.append("dates")
+        nav = self.indices[asset_names].dropna(axis = 0)
+        nav.sort_values(by = 'dates', inplace =True)
+        return nav
     
-    def get_end_date(self):
-        return self.end_dt
+    def get_end_date(self, data):
+        return data.dates.iloc[-1].date()
+    
+    def get_start_date(self, data):
+        return data.dates.iloc[0].date()
 
     
     # start, end date format id mm/dd/yy
@@ -66,37 +48,23 @@ class Base:
         data = pd.merge(dates, data, on="dates", how="left")
         data.sort_values(by="dates", inplace=True)
 
+        return data
+
     def preprocess_missing(self, data):
         for col in data.columns:
             if col != "dates":
                 data[col] = data[col].ffill().add(
                     data[col].bfill()).div(2)
+                
+        return data
 
     def data_preprocessing(self, data):
         data = self.preprocess_dates(data)
+        print("After Preprocessing......\n",data)
         data = self.preprocess_missing(data)
         return data
 
-    def load_indices_data(self):
-        self.indices_data = {}  
-        print("------Loading Indices Data------") 
-        for asset in self.asset_weights.keys():
-            if self.asset_weights[asset] != 0:
-                if asset not in self.indices_data.keys():
-                    self.indices_data[asset] = pd.read_excel(self.paths[asset])
 
-        print("-------Indices data Loaded----------------")
-
-        return self.indices_data
-
-        
-
-
-
-        
-
-    def print_weights(self):
-        print(self.asset_weights)
 
 
     
