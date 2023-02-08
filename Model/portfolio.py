@@ -8,20 +8,22 @@ from .model_inputs import InputVariables
 
 
 class PortFolio:
-    def __init__(self, data):
+    def __init__(self, data, asset_weights = {}):
         self.nav = data
-        self.weights = 0
-        self.cur_units = 0
-        self.funds_portfolio_value=0
-        pass
+        self.weights = asset_weights
+        self.cur_units = {x:[] for x in self.weights.keys()}
+        self.funds_portfolio_value = {x:[] for x in self.weights.keys()}
+        self.fund_vals = [x+'_value' for x in self.weights.keys()]
+        self.fund_units = [x+'_units' for x in self.weights.keys()]
+        self.fund_abv = [x for x in self.weights.keys()]
+
+        
 
     def portfolio_creator(self, lumpsum_investment=1000):
         rebalancing = [np.nan for _ in range(len(self.nav))]
         weights = self.weights
         # print('len', len(self.funds_portfolio_value['fund1']))
-        cur_units = copy.deepcopy(
-            self.cur_units
-        )  # dict.copy() wouldnt work becuase the dictionary contains references to arrays
+        cur_units = copy.deepcopy(self.cur_units)  # dict.copy() wouldnt work becuase the dictionary contains references to arrays
         funds_portfolio_value = copy.deepcopy(self.funds_portfolio_value)
         for fund in weights.keys():
             for i in range(len(self.nav)):
@@ -56,11 +58,11 @@ class PortFolio:
 
         return portfolio_BAH
 
-    def portfolio_rebalancer(self, portfolio_BAH):
+    def portfolio_rebalancer(self):
 
         self.portfolio_automated = self.portfolio_creator()
         print(f"In Portfolio Rebalancer Function")
-        fund_wts = list(self.weights[self.portfolio_name].values())
+        fund_wts = list(self.weights.values())
         for i in range(1, len(self.portfolio_automated)):
             self.portfolio_automated.loc[
                 i, self.fund_units
@@ -90,7 +92,7 @@ class PortFolio:
                 # print('portfolio_weights_after_rebalancing',self.portfolio_automated.loc[i, self.fund_vals]/self.portfolio_automated.loc[i, self.fund_vals].sum())
 
         self.portfolio_automated[
-            "portfolio_" + self.portfolio_name
+            "Portfolio"
         ] = self.portfolio_automated[self.fund_vals].sum(axis=1)
 
         return self.portfolio_automated

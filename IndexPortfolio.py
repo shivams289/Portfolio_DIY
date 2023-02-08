@@ -99,6 +99,7 @@ if debt_alloc !=0 :
 if snp500 !=0 :
     assets.append("SNP500")
 
+asset_weights = {"N50":n50, "NN50":nn50, "MIDCAP150":midcap, "SMALLCAP250":smallcap, "GOLD":gold_alloc, "DEBT":debt_alloc, "SNP500":snp500}
 assets_nav = B.get_assets_nav(assets)
 start_dt = B.get_start_date(assets_nav)
 end_dt = B.get_end_date(assets_nav)
@@ -113,5 +114,5 @@ print("User Entered Start and End Dates:",start_date, end_date)
 assets_nav = assets_nav.loc[(assets_nav.dates.dt.date >= start_date) & (assets_nav.dates.dt.date <= end_date) ]
 print("Final Dates With Which Portfolio Will be created",assets_nav.dates.iloc[0], assets_nav.dates.iloc[-1])
 
-P = PortFolio(assets_nav)
+P = PortFolio(assets_nav, asset_weights)
 
