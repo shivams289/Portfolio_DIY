@@ -111,13 +111,17 @@ assets_nav = B.get_assets_nav(assets)
 start_dt = B.get_start_date(assets_nav)
 end_dt = B.get_end_date(assets_nav)
 print(start_dt, end_dt)
+with st.form("My form1"):
+    st.subheader("Enter the TimeFrame of Backtest")
+    col10, col11 = st.columns(2)
+    with col10:
+        start_date = st.date_input("Start Date", value = start_dt, min_value= start_dt, max_value=end_dt)
+    with col11:
+        end_date = st.date_input("End Date", value = end_dt,min_value= start_date, max_value=end_dt)
 
-st.subheader("Enter the TimeFrame of Backtest")
-col10, col11 = st.columns(2)
-with col10:
-    start_date = st.date_input("Start Date", value = start_dt, min_value= start_dt)
-with col11:
-    end_date = st.date_input("End Date", value = end_dt,min_value= start_date, max_value=end_dt)
+    submitted = st.form_submit_button("Submit")
+    if submitted:
+        st.write("Creating Portfolio For You.....")
 
 print("User Entered Start and End Dates:",start_date, end_date, "\n")
 
@@ -126,7 +130,8 @@ assets_nav.reset_index(inplace=True, drop=True)
 print("Final Dates With Which Portfolio Will be created",assets_nav.dates.iloc[0], assets_nav.dates.iloc[-1], "\n")
 
 P = PortFolio(assets_nav, asset_weights)
-portfolio = P.portfolio_creator()
+# portfolio = P.portfolio_creator()
+portfolio = P.portfolio_rebalancer()
 
 print("final BAH Portfolio", portfolio['Portfolio'])
 
@@ -138,6 +143,8 @@ st.subheader(
 chart_options = list(set(assets_nav.columns) - set(['dates']))
 portfolio[chart_options] = B.scale_data(portfolio[chart_options])
 chart_options.append('Portfolio')
+chart_options.append('Portfolio_rebalanced')
+
 selected_options = st.multiselect(
     'PortfolioVs',
     chart_options, 'Portfolio')

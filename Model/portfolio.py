@@ -94,7 +94,7 @@ class PortFolio:
                 # print('portfolio_weights_after_rebalancing',self.portfolio_automated.loc[i, self.fund_vals]/self.portfolio_automated.loc[i, self.fund_vals].sum())
 
         self.portfolio_automated[
-            "Portfolio"
+            "Portfolio_rebalanced"
         ] = self.portfolio_automated[self.fund_vals].sum(axis=1)
 
         return self.portfolio_automated
