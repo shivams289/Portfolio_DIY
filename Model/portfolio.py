@@ -60,7 +60,7 @@ class PortFolio:
 
         return portfolio_BAH
 
-    def portfolio_rebalancer(self):
+    def portfolio_rebalancer(self, signal = {}):
 
         self.portfolio_automated = self.portfolio_creator()
         print(f"In Portfolio Rebalancer Function")
@@ -74,9 +74,7 @@ class PortFolio:
                 * self.portfolio_automated.loc[i, self.fund_abv].values
             )
 
-            if (self.portfolio_automated.dates[i].month == 4) and (
-                self.portfolio_automated.dates[i - 1].month == 3
-            ):
+            if ((self.nav.dates.iloc[i].date() in signal.keys()) and signal[self.nav.dates.iloc[i].date()]):
                 self.portfolio_automated.loc[i, "rebalanced"] = 1
                 # print('portfolio_weights_before_rebalancing',self.portfolio_automated.loc[i, self.fund_vals]/self.portfolio_automated.loc[i, self.fund_vals].sum())
                 fund_navs = self.portfolio_automated.loc[i,

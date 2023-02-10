@@ -8,6 +8,7 @@ import datetime as dt
 from dateutil.relativedelta import relativedelta
 from Model.base import Base
 from Model.portfolio import PortFolio
+from Model.rebalancing_signal import RebalanceSignal
 B = Base()
 st.title('Create Your Own Index Portfolio')
 st.write('------------------------------------------------------------------------------------------------------')
@@ -113,25 +114,53 @@ end_dt = B.get_end_date(assets_nav)
 print(start_dt, end_dt)
 with st.form("My form1"):
     st.subheader("Enter the TimeFrame of Backtest")
-    col10, col11 = st.columns(2)
+    col10, col11, col12 = st.columns(3)
     with col10:
         start_date = st.date_input("Start Date", value = start_dt, min_value= start_dt, max_value=end_dt)
     with col11:
         end_date = st.date_input("End Date", value = end_dt,min_value= start_date, max_value=end_dt)
+
+    with col12:
+        delta = relativedelta(months=0)
+        rebalance = st.selectbox("Rebalancing", options = ['NO', 'Annual', 'Semi-Annual', 'Quaterly', 'Monthly'], index = 0)
+        if rebalance == 'Annual':
+            delta = relativedelta(months=12)
+        if rebalance == 'Semi-Annual':
+            delta = relativedelta(months=6)
+        if rebalance == 'Quaterly':
+            delta = relativedelta(months=3)
+        if rebalance == 'Monthly':
+            delta = relativedelta(months=1)
 
     submitted = st.form_submit_button("Submit")
     if submitted:
         st.write("Creating Portfolio For You.....")
 
 print("User Entered Start and End Dates:",start_date, end_date, "\n")
+rebalancing_date = start_date+delta
+print("rebalancing_date: ", rebalancing_date)
+
 
 assets_nav = assets_nav.loc[(assets_nav.dates.dt.date >= start_date) & (assets_nav.dates.dt.date <= end_date) ]
 assets_nav.reset_index(inplace=True, drop=True)
 print("Final Dates With Which Portfolio Will be created",assets_nav.dates.iloc[0], assets_nav.dates.iloc[-1], "\n")
 
 P = PortFolio(assets_nav, asset_weights)
-# portfolio = P.portfolio_creator()
-portfolio = P.portfolio_rebalancer()
+
+R = RebalanceSignal(start=rebalancing_date, end=end_date)
+if rebalance == "NO":
+    portfolio = P.portfolio_creator()
+else:
+    if rebalance == 'Annual':
+        portfolio = P.portfolio_rebalancer(R.create_annual_signal())
+
+    if rebalance == 'Semi-Annual':
+        portfolio = P.portfolio_rebalancer(R.create_semi_annual_signal())
+    if rebalance == 'Monthly':
+        portfolio = P.portfolio_rebalancer(R.create_monthly_signal())
+
+    if rebalance == 'Quaterly':
+        portfolio = P.portfolio_rebalancer(R.create_semi_annual_signal())
 
 print("final BAH Portfolio", portfolio['Portfolio'])
 
@@ -143,7 +172,8 @@ st.subheader(
 chart_options = list(set(assets_nav.columns) - set(['dates']))
 portfolio[chart_options] = B.scale_data(portfolio[chart_options])
 chart_options.append('Portfolio')
-chart_options.append('Portfolio_rebalanced')
+if rebalance != "NO":
+    chart_options.append('Portfolio_rebalanced')
 
 selected_options = st.multiselect(
     'PortfolioVs',
