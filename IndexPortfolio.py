@@ -9,7 +9,10 @@ from dateutil.relativedelta import relativedelta
 from Model.base import Base
 from Model.portfolio import PortFolio
 from Model.rebalancing_signal import RebalanceSignal
+from Model.metrics import Metrics
+M = Metrics()
 B = Base()
+
 st.title('Create Your Own Index Portfolio')
 st.write('------------------------------------------------------------------------------------------------------')
 st.header('Using Which Assets You Want to Create your Own POrtfolio?')
@@ -169,15 +172,40 @@ st.subheader(
                         """
 )
 
+rolling_calc_cols_assets = list(set(assets_nav.columns) - set(['dates']))
+
 chart_options = list(set(assets_nav.columns) - set(['dates']))
 portfolio[chart_options] = B.scale_data(portfolio[chart_options])
 chart_options.append('Portfolio')
+rolling_calc_cols_assets.append('Portfolio')
 if rebalance != "NO":
     chart_options.append('Portfolio_rebalanced')
+    rolling_calc_cols_assets.append('Portfolio_rebalanced')
 
 selected_options = st.multiselect(
     'PortfolioVs',
     chart_options, 'Portfolio')
 
 st.line_chart(portfolio, x='dates', y=selected_options)
+selected_options_with_date = selected_options.copy()
+selected_options_with_date.append('dates')
+st.download_button(label="Download Selected Data", data = B.convert_csv(portfolio[selected_options_with_date]), file_name="customportfolios.csv", mime='text/csv')
+st.write('----------------------------------------------------------------------------------------------------------')
+st.subheader("METRICS")
+st.table(M.drawdown(portfolio[selected_options]))
+st.write('----------------------------------------------------------------------------------------------------------')
+st.subheader('Rolling Return Chart')
+y = st.number_input("Year", value=3, min_value=1, max_value=100)
+rollin,avg = M.rolling(portfolio, portfolio_name = rolling_calc_cols_assets, n=y)
+st.line_chart(rollin, x='dates', y=rolling_calc_cols_assets)
+st.download_button(label="Download Rolling", data = B.convert_csv(rollin), file_name="customrolling.csv", mime='text/csv')
+st.write('----------------------------------------------------------------------------------------------------------')
+st.subheader("Rolling Return Aggregate Metrics")
+st.table(avg)
+st.download_button(label="Download Average", data = B.convert_csv(avg), file_name="customavg.csv", mime='text/csv')
+st.write('----------------------------------------------------------------------------------------------------------')
+st.subheader("CAGR Returns")
+cagr = M.cagr(portfolio, cols = rolling_calc_cols_assets)
+st.table(cagr)
 
+st.download_button(label="Download CAGR", data = B.convert_csv(cagr), file_name="customcagr.csv", mime='text/csv')

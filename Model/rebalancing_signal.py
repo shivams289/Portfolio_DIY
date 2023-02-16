@@ -1,5 +1,6 @@
 import pandas as pd
 import datetime as dt
+import streamlit as st
 class RebalanceSignal:
     def __init__(self, start = dt.date(2010, 1, 1), end = dt.date(2022, 4, 1)):
         #Let's create business dates in the range of of our portfolio data
@@ -13,6 +14,7 @@ class RebalanceSignal:
         self.dates.sort_values(by="dates", inplace=True)  # business/trading dates in this range
         self.dates.reset_index(drop=True, inplace=True)
 
+    st.cache()
     def create_annual_signal(self):
         month = self.month
         month1 =  month-1
@@ -27,6 +29,7 @@ class RebalanceSignal:
         print("Rebalancing dates",rebalancing_signal_dic)
 
         return rebalancing_signal_dic
+    st.cache()
     def create_semi_annual_signal(self):
         month = self.month
         month1 =  month-1
@@ -50,7 +53,7 @@ class RebalanceSignal:
         return rebalancing_signal_dic
 
         
-
+    st.cache()
     def create_quaterly_signal(self):
         rebalancing_signal_dic = {}
         for i in range(1, len(self.dates)):
@@ -61,7 +64,7 @@ class RebalanceSignal:
         print("Rebalancing dates",rebalancing_signal_dic)
 
         return rebalancing_signal_dic
-
+    st.cache()
     def create_monthly_signal(self):
         rebalancing_signal_dic = {}
         for i in range(1, len(self.dates)):

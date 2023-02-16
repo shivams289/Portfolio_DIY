@@ -1,5 +1,6 @@
 import pandas as pd
 import datetime
+import streamlit as st
 class Base:
     def __init__(self, indices_path = 'Data/n50_nn50_smallcap_midcap_indices.xlsx', smallcap_path='Data/all_smallcap_jan31.xlsx', midcap_path = 'Data/all_midcap_jan31.xlsx', start = '04/01/1997', end = '01/19/2023'):
         self.start_dt = start
@@ -12,7 +13,7 @@ class Base:
         indices_names = {"NIFTY 50":"N50", "NIFTY NEXT 50":"NN50", "Nifty Midcap 150 - TRI":"MIDCAP150", "Nifty Smallcap 250 - TRI":"SMALLCAP250", "GOLD":"GOLD", "Aditya Birla SL Corp Bond Fund(G)":"DEBT", "SNP500":"SNP500"}
         self.indices.rename(columns = indices_names, inplace =True)
 
-
+    st.cache()
     def get_assets_nav(self, asset_names = []):
         asset_names.append("dates")
         nav = self.indices[asset_names].dropna(axis = 0)
@@ -73,6 +74,10 @@ class Base:
         )
 
         return data
+    st.cache()
+    def convert_csv(self, data):
+        return data.to_csv(index = False).encode('utf-8')
+
 
 
 
