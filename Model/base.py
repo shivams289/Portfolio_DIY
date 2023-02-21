@@ -2,10 +2,15 @@ import pandas as pd
 import datetime
 import streamlit as st
 class Base:
+    
     def __init__(self, indices_path = 'Data/n50_nn50_smallcap_midcap_indices.xlsx', smallcap_path='Data/all_smallcap_jan31.xlsx', midcap_path = 'Data/all_midcap_jan31.xlsx', start = '04/01/1997', end = '01/19/2023'):
         self.start_dt = start
         self.end_dt = end
-        self.indices = pd.read_excel(indices_path) #Contains NIFTY50, NIFTY NEXT50, NIFTY SMALLCAP 250, NIFTY MIDCAP 150 & S&P500
+        
+        @st.cache_data()
+        def load_data(indices_path):
+            return pd.read_excel(indices_path)
+        self.indices = load_data(indices_path) #Contains NIFTY50, NIFTY NEXT50, NIFTY SMALLCAP 250, NIFTY MIDCAP 150 & S&P500
         print("Loading indices data.....\n",self.indices)
 
         self.indices = self.data_preprocessing(self.indices)
