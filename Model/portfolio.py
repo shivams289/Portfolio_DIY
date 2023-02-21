@@ -22,7 +22,6 @@ class PortFolio:
         self.fund_abv = [x for x in self.weights.keys()]
 
         
-    st.cache()
     def portfolio_creator(self, lumpsum_investment=1000):
         rebalancing = [np.nan for _ in range(len(self.nav))]
         weights = self.weights
@@ -62,7 +61,6 @@ class PortFolio:
 
         return portfolio_BAH
     
-    st.cache()
     def portfolio_rebalancer(self, signal = {}):
 
         self.portfolio_automated = self.portfolio_creator()

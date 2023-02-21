@@ -13,7 +13,6 @@ class Base:
         indices_names = {"NIFTY 50":"N50", "NIFTY NEXT 50":"NN50", "Nifty Midcap 150 - TRI":"MIDCAP150", "Nifty Smallcap 250 - TRI":"SMALLCAP250", "GOLD":"GOLD", "Aditya Birla SL Corp Bond Fund(G)":"DEBT", "SNP500":"SNP500"}
         self.indices.rename(columns = indices_names, inplace =True)
 
-    st.cache()
     def get_assets_nav(self, asset_names = []):
         asset_names.append("dates")
         nav = self.indices[asset_names].dropna(axis = 0)
@@ -74,7 +73,6 @@ class Base:
         )
 
         return data
-    st.cache()
     def convert_csv(self, data):
         return data.to_csv(index = False).encode('utf-8')
 
