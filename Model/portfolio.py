@@ -28,22 +28,25 @@ class PortFolio:
         # print('len', len(self.funds_portfolio_value['fund1']))
         cur_units = copy.deepcopy(self.cur_units)  # dict.copy() wouldnt work becuase the dictionary contains references to arrays
         funds_portfolio_value = copy.deepcopy(self.funds_portfolio_value)
-        for fund in weights.keys():
-            for i in range(len(self.nav)):
-                if i == 0:
-                    cur_units[fund].append(
-                        lumpsum_investment * weights[fund] / self.nav[fund][i]
-                    )
-                    funds_portfolio_value[fund].append(
-                        cur_units[fund][i] * self.nav[fund][i]
-                    )
+        @st.cache_data()
+        def PC(weights, cur_units, funds_portfolio_value):
+            for fund in weights.keys():
+                for i in range(len(self.nav)):
+                    if i == 0:
+                        cur_units[fund].append(
+                            lumpsum_investment * weights[fund] / self.nav[fund][i]
+                        )
+                        funds_portfolio_value[fund].append(
+                            cur_units[fund][i] * self.nav[fund][i]
+                        )
 
-                else:
-                    cur_units[fund].append(cur_units[fund][i - 1])
-                    funds_portfolio_value[fund].append(
-                        cur_units[fund][i] * self.nav[fund][i]
-                    )
-
+                    else:
+                        cur_units[fund].append(cur_units[fund][i - 1])
+                        funds_portfolio_value[fund].append(
+                            cur_units[fund][i] * self.nav[fund][i]
+                        )
+            return cur_units, funds_portfolio_value
+        cur_units, funds_portfolio_value = PC(weights, cur_units, funds_portfolio_value)
         funds_portfolio_value = pd.DataFrame(funds_portfolio_value)
         cur_units = pd.DataFrame(cur_units)
 
@@ -66,6 +69,7 @@ class PortFolio:
         self.portfolio_automated = self.portfolio_creator()
         print(f"In Portfolio Rebalancer Function")
         fund_wts = list(self.weights.values())
+        
         for i in range(1, len(self.portfolio_automated)):
             self.portfolio_automated.loc[
                 i, self.fund_units
@@ -79,7 +83,7 @@ class PortFolio:
                 self.portfolio_automated.loc[i, "rebalanced"] = 1
                 # print('portfolio_weights_before_rebalancing',self.portfolio_automated.loc[i, self.fund_vals]/self.portfolio_automated.loc[i, self.fund_vals].sum())
                 fund_navs = self.portfolio_automated.loc[i,
-                                                         self.fund_abv].values
+                                                        self.fund_abv].values
                 curr_port_val = self.portfolio_automated.loc[
                     i, self.fund_vals
                 ].sum()
@@ -91,7 +95,6 @@ class PortFolio:
                     * self.portfolio_automated.loc[i, self.fund_abv].values
                 )
                 # print('portfolio_weights_after_rebalancing',self.portfolio_automated.loc[i, self.fund_vals]/self.portfolio_automated.loc[i, self.fund_vals].sum())
-
         self.portfolio_automated[
             "Portfolio_rebalanced"
         ] = self.portfolio_automated[self.fund_vals].sum(axis=1)
